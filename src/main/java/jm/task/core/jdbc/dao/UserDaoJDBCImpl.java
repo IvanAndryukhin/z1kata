@@ -1,27 +1,25 @@
 package jm.task.core.jdbc.dao;
 
-import jm.task.core.jdbc.Main;
 import jm.task.core.jdbc.model.User;
-import jm.task.core.jdbc.service.UserServiceImpl;
 import jm.task.core.jdbc.util.Util;
-import org.hibernate.boot.model.relational.Database;
-
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
-
     private Connection connection;
 
     public UserDaoJDBCImpl() {
-        Util util = new Util();
-        this.connection = util.getConnection();
-        try {
-            connection.setAutoCommit(false);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        connection = Util.getConnection();
+        if (connection != null) {
+            try {
+                connection.setAutoCommit(false);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("Не удалось установить соединение с БД");
         }
     }
 
@@ -33,7 +31,10 @@ public class UserDaoJDBCImpl implements UserDao {
                 "lastName VARCHAR(50), " +
                 "age TINYINT)";
 
-
+        if (connection == null) {
+            System.out.println("Oshibka");
+            return;
+        }
         try (Statement statement3 = connection.createStatement()) {
             statement3.executeUpdate(sql1);
             System.out.println("Таблица создана");
@@ -57,12 +58,20 @@ public class UserDaoJDBCImpl implements UserDao {
     public void saveUser(String name, String lastName, byte age) {
 
         String sql3 = "INSERT INTO users (name, lastName, age) VALUES (?, ?, ?)"; //здесь
+        try {
+            connection.setAutoCommit(false);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         try (PreparedStatement stmt = connection.prepareStatement(sql3, Statement.RETURN_GENERATED_KEYS)) {
+            connection.setAutoCommit(false);
+
             stmt.setString(1, name);
             stmt.setString(2, lastName);
             stmt.setByte(3, age);
             stmt.executeUpdate();
+            connection.commit();
 
         } catch (SQLException e) {
             if (connection != null) {
@@ -73,15 +82,28 @@ public class UserDaoJDBCImpl implements UserDao {
                 }
             }
             e.printStackTrace();
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
 
     public void removeUserById(long id) {
-        String sql4 = "DELETE FROM users WHERE id = ?"; //здесь
+        String sql4 = "DELETE FROM users WHERE id = ?";
+        try {
+            connection.setAutoCommit(false);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         try (PreparedStatement stmt1 = connection.prepareStatement(sql4)) {
             stmt1.setLong(1, id);
             stmt1.executeUpdate();
+            connection.commit();
 
         } catch (SQLException e) {
             if (connection != null) {
@@ -98,7 +120,6 @@ public class UserDaoJDBCImpl implements UserDao {
         List<User> users = new ArrayList<>();
         String sql5 = "SELECT * FROM users";
 
-
         try (Statement statement = connection.createStatement();
              ResultSet rs = statement.executeQuery(sql5)
         ) {
@@ -112,7 +133,6 @@ public class UserDaoJDBCImpl implements UserDao {
                 user.setId(id);
                 users.add(user);
             }
-            connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
