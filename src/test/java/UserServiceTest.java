@@ -10,7 +10,7 @@ import java.util.List;
 public class UserServiceTest {
     Connection connection;
 
-    private final UserService userService = new UserServiceImpl(connection);
+    private final UserService userService = new UserServiceImpl();
 
     private final String testName = "Ivan";
     private final String testLastName = "Ivanov";

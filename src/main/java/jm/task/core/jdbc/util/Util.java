@@ -14,7 +14,7 @@ public class Util {
     private Util() {
         try {
             Class.forName(DB_DRIVER);
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
@@ -22,12 +22,14 @@ public class Util {
 
     public static Connection getConnection() {
         Connection connection = null;
-        try {
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return connection;
+        if (connection == null) {
+            try {
+                connection = DriverManager.getConnection(URL, USER, PASSWORD);
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } return connection;
     }
 
     public static  void closeConnection() {

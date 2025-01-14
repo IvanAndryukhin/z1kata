@@ -24,8 +24,9 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
 
+    @Override
     public void createUsersTable() {
-        String sql1 = "CREATE TABLE IF NOT EXISTS users (" +
+        String createTable = "CREATE TABLE IF NOT EXISTS users (" +
                 "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
                 "name VARCHAR(50), " +
                 "lastName VARCHAR(50), " +
@@ -36,7 +37,7 @@ public class UserDaoJDBCImpl implements UserDao {
             return;
         }
         try (Statement statement3 = connection.createStatement()) {
-            statement3.executeUpdate(sql1);
+            statement3.executeUpdate(createTable);
             System.out.println("Таблица создана");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -44,27 +45,24 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
 
+    @Override
     public void dropUsersTable() {
-        String sql2 = "DROP TABLE IF EXISTS users;";
+        String dropTable = "DROP TABLE IF EXISTS users;";
 
         try (Statement statement1 = connection.createStatement()) {
-            statement1.executeUpdate(sql2);
+            statement1.executeUpdate(dropTable);
             System.out.println("Table drop");
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    @Override
     public void saveUser(String name, String lastName, byte age) {
 
-        String sql3 = "INSERT INTO users (name, lastName, age) VALUES (?, ?, ?)"; //здесь
-        try {
-            connection.setAutoCommit(false);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        String userSaver = "INSERT INTO users (name, lastName, age) VALUES (?, ?, ?)"; //здесь
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql3, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement stmt = connection.prepareStatement(userSaver, Statement.RETURN_GENERATED_KEYS)) {
             connection.setAutoCommit(false);
 
             stmt.setString(1, name);
@@ -92,15 +90,11 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
 
+    @Override
     public void removeUserById(long id) {
-        String sql4 = "DELETE FROM users WHERE id = ?";
-        try {
+        String deleteUser = "DELETE FROM users WHERE id = ?";
+        try (PreparedStatement stmt1 = connection.prepareStatement(deleteUser)) {
             connection.setAutoCommit(false);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try (PreparedStatement stmt1 = connection.prepareStatement(sql4)) {
             stmt1.setLong(1, id);
             stmt1.executeUpdate();
             connection.commit();
@@ -109,19 +103,27 @@ public class UserDaoJDBCImpl implements UserDao {
             if (connection != null) {
                 try {
                     connection.rollback();
+                    connection.setAutoCommit(true);
                 } catch (SQLException rollbackException) {
                     rollbackException.printStackTrace();
                 }
             }
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
+    @Override
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
-        String sql5 = "SELECT * FROM users";
+        String selectUser = "SELECT * FROM users";
 
         try (Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery(sql5)
+             ResultSet rs = statement.executeQuery(selectUser)
         ) {
             while (rs.next()) {
                 Long id = rs.getLong("id");
@@ -140,6 +142,7 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
 
+    @Override
     public void cleanUsersTable() {
         String sql6 = "TRUNCATE TABLE users;";
         try (PreparedStatement stmt2 = connection.prepareStatement(sql6)) {
