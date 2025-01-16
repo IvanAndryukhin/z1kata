@@ -15,9 +15,10 @@ public class Main {
 
 
         UserServiceImpl userService = new UserServiceImpl();
+        System.out.println("Таблица создана");
 
         userService.createUsersTable();
-        userService.saveUser("Иван", "Иванов", (byte) 25);
+         userService.saveUser("Иван", "Иванов", (byte) 25);
         userService.saveUser("Петр", "Петров", (byte) 30);
         userService.saveUser("Анна", "Аннова", (byte) 22);
         userService.saveUser("Елена", "Еленова", (byte) 28);
@@ -26,7 +27,7 @@ public class Main {
         List<User> users = userService.getAllUsers();
         System.out.println("Список: ");
         for (User user : users) {
-            System.out.println(user.toString());
+           System.out.println(user.toString());
         }
 
 

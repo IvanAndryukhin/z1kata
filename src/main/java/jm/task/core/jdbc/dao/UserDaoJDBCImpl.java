@@ -8,19 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
-    private Connection connection;
+
+    private Connection connection= Util.getConnection();
 
     public UserDaoJDBCImpl() {
-        connection = Util.getConnection();
-        if (connection != null) {
-            try {
-                connection.setAutoCommit(false);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        } else {
-            System.out.println("Не удалось установить соединение с БД");
-        }
     }
 
 
@@ -63,7 +54,9 @@ public class UserDaoJDBCImpl implements UserDao {
         String userSaver = "INSERT INTO users (name, lastName, age) VALUES (?, ?, ?)"; //здесь
 
         try (PreparedStatement stmt = connection.prepareStatement(userSaver, Statement.RETURN_GENERATED_KEYS)) {
-            connection.setAutoCommit(false);
+            if(connection == null) {
+                connection.setAutoCommit(false);
+            }else throw new SQLException("Соединение не установлено");
 
             stmt.setString(1, name);
             stmt.setString(2, lastName);
@@ -82,7 +75,9 @@ public class UserDaoJDBCImpl implements UserDao {
             e.printStackTrace();
         } finally {
             try {
-                connection.setAutoCommit(true);
+                if(connection != null) {
+                    connection.setAutoCommit(true);
+                }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -103,7 +98,6 @@ public class UserDaoJDBCImpl implements UserDao {
             if (connection != null) {
                 try {
                     connection.rollback();
-                    connection.setAutoCommit(true);
                 } catch (SQLException rollbackException) {
                     rollbackException.printStackTrace();
                 }
@@ -111,6 +105,7 @@ public class UserDaoJDBCImpl implements UserDao {
         } finally {
             try {
                 connection.setAutoCommit(true);
+
             } catch (SQLException e) {
                 e.printStackTrace();
             }
