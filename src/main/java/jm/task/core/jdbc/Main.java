@@ -1,13 +1,9 @@
 package jm.task.core.jdbc;
 
-import com.google.protobuf.Service;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.service.UserServiceImpl;
 import jm.task.core.jdbc.util.Util;
 
-
-import java.security.Provider;
-import java.sql.Connection;
 import java.util.List;
 
 public class Main {
@@ -36,7 +32,7 @@ public class Main {
         userService.dropUsersTable();
         System.out.println("Таблица удалена");
 
-        Util.closeConnection();
+        Util.closeSessionFactory();
 
     }
 }
